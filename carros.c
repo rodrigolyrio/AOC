@@ -29,9 +29,9 @@ int main() {
     }
 
     if (kmx > kmy) {
-        printf("Carro X ultrapassou o Carro Y na hora %d após o KM %d\n", h, kmy);
+        printf("O Carro X ultrapassou o Carro Y na hora %d apos o KM %d\n", h, kmy);
     } else {
-        printf("Carro Y ultrapassou o Carro X na hora %d após o KM %d\n", h, kmx);
+        printf("O Carro Y ultrapassou o Carro X na hora %d apos o KM %d\n", h, kmx);
     }
 
     return 0;
