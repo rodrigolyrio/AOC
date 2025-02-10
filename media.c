@@ -15,9 +15,9 @@ int main() {
     media = (nota1 + nota2 + nota3 + nota4) / 4;
 
     if (media >= 60) {
-        printf("Aluno aprovado com média %.2f\n", media);
+        printf("Aluno APROVADO com media %.2f\n", media);
     } else {
-        printf("Aluno reprovado com média %.2f\n", media);
+        printf("Aluno REPROVADO com media %.2f\n", media);
     }
 
     return 0;
