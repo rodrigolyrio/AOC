@@ -39,7 +39,36 @@ mov vy, cx
 
 ; input \n:
 putc 0Dh
-putc 0Ah
+putc 0Ah 
+
+; input \n:
+putc 0Dh
+putc 0Ah 
+
+sprint msg5
+
+; Imprime kmx
+mov ax, kmx
+call print_num_uns
+
+sprint msg6
+
+; Imprime vx
+mov ax, vx
+call print_num_uns
+
+sprint msg7
+
+; Imprime kmy
+mov ax, kmy
+call print_num_uns
+
+sprint msg8
+
+; Imprime vy
+mov ax, vy
+call print_num_uns
+
 
 
 ;Se o carro Y estiver a frente pula pra Xatras
@@ -141,13 +170,23 @@ call print_num_uns
 putc 0Dh
 putc 0Ah
 
+mov ax,vy
+cmp vx,ax
+jb y_ultrapassa
+
 sprint msg9 
 
+jmp y_naopassa 
+y_ultrapassa:
+sprint msg10
+
+y_naopassa:
 ; Imprime numero
 mov ax, hora
 call print_num_uns
+
                    
-sprint msg10
+sprint msg11
 
 ; Imprime numero
 mov ax, bx
@@ -186,12 +225,13 @@ msg3 db 'Digite a posi', 135, 198, 'o inicial do carro Y (kmy): $'
 msg4 db "Digite a velocidade do carro Y (vy): $" 
 
 msg5 db "kmx = $"
-msg6 db " vx = $"
-msg7 db " kmy = $" 
-msg8 db " vy = $" 
+msg6 db " | vx = $"
+msg7 db " | kmy = $" 
+msg8 db " | vy = $" 
 
 msg9 db "Carro X ultrapassou o carro Y na hora $"
-msg10 db " apos o KM $"
+msg10 db "Carro Y ultrapassou o carro X na hora $"
+msg11 db " apos o KM $"
 
 msgi db 'Nunca haver', 160,' ultrapassagem! $'
 msgO db "Erro de overflow! $"
