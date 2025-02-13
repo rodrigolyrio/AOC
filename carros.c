@@ -13,20 +13,22 @@ int main() {
     printf("Digite a velocidade do carro Y (vy): ");
     scanf("%d", &vy);
 
-    if (vx == vy) {
-        printf("A velocidade dos carros devem ser diferentes entre si.\n");
+    if ((kmx>kmy && vx>vy) || (kmx<kmy && vx<vy) || (vx==vy)) {
+        printf("\nNunca haverá ultrapassagem!\n");
         return 1; // Erro
     }
 
-    printf("Hora %d: Carro X em %d e Carro Y em %d\n", h, kmx, kmy); 
+    printf("\nkmx = %d | vx = %d | kmy = %d | vy = %d\n", kmx, vx, kmy, vy);  
 
     while ((vx > vy && kmx <= kmy) || (vx < vy && kmy <= kmx)) { // Enquanto não houver ultrapassagem entre os carros, o loop ocorrerá
+        printf("Hora %d: Carro X em %d e Carro Y em %d\n", h, kmx, kmy);
         h++;
         kmx += vx; // Atualiza a posição do carro X
         kmy += vy; // Atualiza a posição do carro Y
 
-        printf("Hora %d: Carro X em %d e Carro Y em %d\n", h, kmx, kmy);
+        
     }
+    printf("Hora %d: Carro X em %d e Carro Y em %d\n", h, kmx, kmy);
 
     if (kmx > kmy) {
         printf("O Carro X ultrapassou o Carro Y na hora %d apos o KM %d\n", h, kmy);
