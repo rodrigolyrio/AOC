@@ -10,6 +10,7 @@ int 21h
 ; scan primeiro numero
 call scan_num
 mov numd, cx
+mov bp, numd
 
 ; Pula Linha:
 putc 0Dh
@@ -23,16 +24,40 @@ int 21h
 ; Scan do segundo numero
 call scan_num
 mov num, cx
-
+mov si, num
 ; Pula Linha:
 putc 0Dh
-putc 0Ah        
+putc 0Ah    
+
+; Imprime mensagem do terceiro numero   
+mov dx, offset msg5
+mov ah, 9
+int 21h
+
+; scan terceiro numero
+call scan_num
+mov numt, cx
+mov di , numt  
+putc 0Dh
+putc 0Ah    
+
+      
           
-; Imprime mensagem    
+; Imprime mensagem com o primeiro numero  
+  
 mov dx, offset msg2
 mov ah, 9
-int 21h    
-; Imprime mensagem    
+int 21h
+; Reimprime numero
+mov ax, numd
+call print_num
+  
+                                  
+; Pula Linha:
+putc 0Dh
+putc 0Ah  
+
+; Imprime mensagem com o segundo numero    
 mov dx, offset msg4
 mov ah, 9
 int 21h        
@@ -40,7 +65,22 @@ int 21h
 
 ; Reimprime numero
 mov ax, num
+call print_num      
+
+
+; Pula Linha:
+putc 0Dh
+putc 0Ah      
+ 
+; Imprime mensagem com o terceiro numero  
+mov dx, offset msg6
+mov ah, 9
+int 21h
+; Reimprime numero
+mov ax, numt
 call print_num
+  
+                
 
 ret
 
@@ -48,11 +88,14 @@ ret
 msg1 db "Digite um numero: $"
 msg2 db "primeiro numero digitado: $"  
 msg3 db "Digite outro numero: $"  
-msg4 db "segundo numero digitado: $"
+msg4 db "segundo numero digitado: $"  
+msg5 db "Digite mais um numero: $"  
+msg6 db "terceiro numero digitado: $"
 
 ; Variaveis
 num dw ?
 numd dw ?
+numt dw ?
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; these functions are copied from emu8086.inc ;;;
