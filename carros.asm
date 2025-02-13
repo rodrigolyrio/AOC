@@ -1,19 +1,20 @@
 org 100h
 
-     
+;printa a mensagem que pede para inserir kmx     
 sprint msg1
 
-; Scan numero
+; Scan da distancia kmx
 call scan_num
 mov kmx, cx    
         
 ; input \n:
 putc 0Dh
 putc 0Ah   
-    
+
+;printa a mensagem que pede para inserir vx         
 sprint msg2
 
-; Scan numero
+; Scan da velocidade vx
 call scan_num
 mov vx, cx
 
@@ -21,19 +22,21 @@ mov vx, cx
 putc 0Dh
 putc 0Ah    
 
+;printa a mensagem que pede para inserir kmy     
 sprint msg3
 
-; Scan numero
+; Scan da distancia kmy
 call scan_num
 mov kmy, cx    
         
 ; input \n:
 putc 0Dh
 putc 0Ah   
-    
+
+;printa a mensagem que pede para inserir vy         
 sprint msg4
 
-; Scan numero
+; Scan da velocidad vy
 call scan_num
 mov vy, cx 
 
@@ -45,6 +48,7 @@ putc 0Ah
 putc 0Dh
 putc 0Ah 
 
+; imprimindo mensagem por partes por causa das variaveis 
 sprint msg5
 
 ; Imprime kmx
@@ -82,23 +86,23 @@ mov cx, kmy
 mov si, vx 
 mov di, vy 
 
-cmp si, di
+cmp si, di     ;checa se vai ter ultrapassagem eventualmente
 jae infinito
 
 jmp hora_em_hora
 
-Xatras:
-mov bx, kmy
-mov cx, kmx
-mov si, vy
+Xatras:        ;Esse jump e para associar os dados de quem esta atras
+mov bx, kmy    ;para registradores especificos e os dados de quem esta 
+mov cx, kmx    ;a frente para outros registradores para facilitar o loop
+mov si, vy     
 mov di, vx
 
-cmp si, di   ;checa se vai ter ultrapassagem eventualmente
+cmp si, di     ;checa se vai ter ultrapassagem eventualmente
 jae infinito
 
 
 
-hora_em_hora: ;loop ate X utrapassar o Y
+hora_em_hora:  ;loop ate a ultrapassagem
         
 ; input \n:
 putc 0Dh
@@ -251,18 +255,18 @@ vy  dw ?
 ;================================================
 ; coloca o print do int21h em um macro
 SPRINT MACRO pos
-    lea dx, pos     
-    mov ah, 9       
+    lea dx, pos      ;Pega o enderenco da string para fazer a interrupcao
+    mov ah, 9        ;21h-9
     int 21h         
 ENDM
 ;================================================ 
 
 ;================================================
-; this macro prints a char in AL and advances
-; the current cursor position:
-PUTC    MACRO   char
+; Macro que printa um caracter usando a interrupcao 10h
+; Preciso para escrever o equivalente de '\n' 
+PUTC    MACRO   caracter
         PUSH    AX
-        MOV     AL, char
+        MOV     AL, caracter
         MOV     AH, 0Eh
         INT     10h     
         POP     AX
@@ -270,8 +274,8 @@ ENDM
 ;================================================
 
 ;================================================
-; gets the multi-digit SIGNED number from the keyboard,
-; and stores the result in CX register:
+; Funcao base do emu8086.inc para ler como input um numero com sinal
+; salva o numero no registrador CX:
 SCAN_NUM        PROC    NEAR
         PUSH    DX
         PUSH    AX
@@ -279,99 +283,99 @@ SCAN_NUM        PROC    NEAR
         
         MOV     CX, 0
 
-        ; reset flag:
+        ; reseta a flag :
         MOV     CS:make_minus, 0
 
 next_digit:
 
-        ; get char from keyboard
-        ; into AL:
+        ; pega um caracter digitado
+        ; coloca no AL:
         MOV     AH, 00h
         INT     16h
-        ; and print it:
+        ; e imprime pro usuario ver o proprio digito:
         MOV     AH, 0Eh
         INT     10h
 
-        ; check for MINUS:
+        ; checa se o caracter e de sinal negativo:
         CMP     AL, '-'
         JE      set_minus
 
-        ; check for ENTER key:
-        CMP     AL, 0Dh  ; carriage return?
+        ; checa se o usuario deu enter:
+        CMP     AL, 0Dh  
         JNE     not_cr
         JMP     stop_input
 not_cr:
 
 
-        CMP     AL, 8                   ; 'BACKSPACE' pressed?
-        JNE     backspace_checked
-        MOV     DX, 0                   ; remove last digit by
-        MOV     AX, CX                  ; division:
-        DIV     CS:ten                  ; AX = DX:AX / 10 (DX-rem).
-        MOV     CX, AX
-        PUTC    ' '                     ; clear position.
-        PUTC    8                       ; backspace again.
-        JMP     next_digit
+        CMP     AL, 8                ; Detecta se 'backspace' foi apertado
+        JNE     backspace_checked    ; Se nao for ele pula essa etapa
+        MOV     DX, 0                ; Prepara DX para divisao
+        MOV     AX, CX               ; Pega o caracter anterior
+        DIV     CS:ten               ; E realizada uma divisao por 10 pois
+        MOV     CX, AX               ; divisao por 10 remove o ultimo numero
+        PUTC    ' '                  ; Limpa a area do caracter anterior
+        PUTC    8                    ; Backspace
+        JMP     next_digit           ; Espera o proximo digito
 backspace_checked:
 
 
-        ; allow only digits:
+        ; analisa se o caracter e um numero:
         CMP     AL, '0'
         JAE     ok_AE_0
-        JMP     remove_not_digit
+        JMP     remove_not_digit  ;se nao for um numero ele e removido
 ok_AE_0:        
         CMP     AL, '9'
         JBE     ok_digit
 remove_not_digit:       
-        PUTC    8       ; backspace.
-        PUTC    ' '     ; clear last entered not digit.
-        PUTC    8       ; backspace again.        
-        JMP     next_digit ; wait for next input.       
+        PUTC    8       ; backspace
+        PUTC    ' '     ; limpa o caracter que nao e um numero
+        PUTC    8       ; backspace        
+        JMP     next_digit ; Espera o proximo digito       
 ok_digit:
 
 
-        ; multiply CX by 10 (first time the result is zero)
+        ; Multiplica CX por 10 (a primeira vez que o resultado for 0)
         PUSH    AX
         MOV     AX, CX
-        MUL     CS:ten                  ; DX:AX = AX*10
+        MUL     CS:ten                  
         MOV     CX, AX
         POP     AX
 
-        ; check if the number is too big
-        ; (result should be 16 bits)
+        ; Checa se for muito grande o numero
+        ; pois o resultado tem que ser 16 bits
         CMP     DX, 0
         JNE     too_big
 
-        ; convert from ASCII code:
+        ; Converte de ASCII:
         SUB     AL, 30h
 
-        ; add AL to CX:
-        MOV     AH, 0
-        MOV     DX, CX      ; backup, in case the result will be too big.
-        ADD     CX, AX
-        JC      too_big2    ; jump if the number is too big.
 
-        JMP     next_digit
+        MOV     AH, 0
+        MOV     DX, CX      ; Salva antes se o numero ficar muito grande
+        ADD     CX, AX
+        JC      too_big2    ; Checa se o numero for muito grande
+
+        JMP     next_digit  ; Espera o proximo digito
 
 set_minus:
         MOV     CS:make_minus, 1
-        JMP     next_digit
+        JMP     next_digit  ; Espera o proximo digito
 
 too_big2:
-        MOV     CX, DX      ; restore the backuped value before add.
-        MOV     DX, 0       ; DX was zero before backup!
+        MOV     CX, DX      ; Restaura para o numero salva antes de ser 
+        MOV     DX, 0       ; muito grande e limpa o save
 too_big:
         MOV     AX, CX
-        DIV     CS:ten  ; reverse last DX:AX = AX*10, make AX = DX:AX / 10
+        DIV     CS:ten      ; Reverte o processo de multiplicar por 10
         MOV     CX, AX
-        PUTC    8       ; backspace.
-        PUTC    ' '     ; clear last entered digit.
-        PUTC    8       ; backspace again.        
-        JMP     next_digit ; wait for Enter/Backspace.
+        PUTC    8           ; Backspace
+        PUTC    ' '         ; Limpa o digito que deixou grande de mais
+        PUTC    8           ; backspace        
+        JMP     next_digit  ; Espera o proximo digito
         
         
 stop_input:
-        ; check flag:
+        ; Checa a flag:
         CMP     CS:make_minus, 0
         JE      not_minus
         NEG     CX
@@ -381,70 +385,69 @@ not_minus:
         POP     AX
         POP     DX
         RET
-make_minus      DB      ?       ; used as a flag.
+make_minus      DB      ?   ; usado de flag.
 SCAN_NUM        ENDP                                
 
 ;================================================
 
 ;================================================
-; this procedure prints out an unsigned
-; number in AX (not just a single digit)
-; allowed values are from 0 to 65535 (FFFF)
+; Printa um numero em AX sem sinal 
+; valores aceitos de 0 a 65535 (FFFF)
 PRINT_NUM_UNS   PROC    NEAR
         PUSH    AX
         PUSH    BX
         PUSH    CX
         PUSH    DX
 
-        ; flag to prevent printing zeros before number:
+        ; flag para impedir printar 0 a esquerda
         MOV     CX, 1
 
-        ; (result of "/ 10000" is always less or equal to 9).
-        MOV     BX, 10000       ; 2710h - divider.
+        ; recebe o valorr 10000 para fazer a divisao de cada casa decimal
+        MOV     BX, 10000       
 
-        ; AX is zero?
+        ; Se AX for 0
         CMP     AX, 0
         JZ      print_zero
 
 begin_print:
 
-        ; check divider (if zero go to end_print):
+        ; Checa se ja passou por todas as casas decimais
         CMP     BX,0
         JZ      end_print
 
-        ; avoid printing zeros before number:
+        ; Evita printar 0 a esquerda
         CMP     CX, 0
         JE      calc
-        ; if AX<BX then result of DIV will be zero:
+        ; Se AX<BX o resultado da divisao vai ser 0
         CMP     AX, BX
         JB      skip
 calc:
-        MOV     CX, 0   ; set flag.
+        MOV     CX, 0   ; Declara a flag.
 
         MOV     DX, 0
-        DIV     BX      ; AX = DX:AX / BX   (DX=remainder).
+        DIV     BX      ; AX recebe a divisao e DX recebe o resto.
 
-        ; print last digit
-        ; AH is always ZERO, so it's ignored
-        ADD     AL, 30h    ; convert to ASCII code.
-        PUTC    AL
+        
+        ; AH sempre e 0 nesse caso
+        ADD     AL, 30h    ; Converte pra ASCII.
+        PUTC    AL         ; Printa o ultimo digito
 
 
-        MOV     AX, DX  ; get remainder from last div.
+        MOV     AX, DX  ; Salva o resto da ultima divisao
 
 skip:
-        ; calculate BX=BX/10
+        ; Vai para a proxima casa decimal ao dividir BX por 10
         PUSH    AX
         MOV     DX, 0
         MOV     AX, BX
-        DIV     CS:ten  ; AX = DX:AX / 10   (DX=remainder).
+        DIV     CS:ten  
         MOV     BX, AX
         POP     AX
 
-        JMP     begin_print
+        JMP     begin_print ;vai para o proximo digito a ser printado
         
 print_zero:
-        PUTC    '0'
+        PUTC    '0' ; Serve apenas para se o numero recebido for 0
         
 end_print:
 
@@ -456,5 +459,5 @@ end_print:
 PRINT_NUM_UNS   ENDP  
 ;================================================
       
-; used as multiplier/divider by SCAN_NUM & PRINT_NUM_UNS.
-ten             DW      10
+
+ten             DW      10 ;usado por SCAN_NUM e PRINT_NUM_UNS como divisor
