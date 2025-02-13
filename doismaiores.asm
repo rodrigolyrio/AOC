@@ -10,13 +10,13 @@ mov dx, offset msg2
 mov ah, 9
 int 21h
 ;call ler_valor / achar a funcao de ler num
-;mov [a] registradorx / por o registrador usado na funcao
+;mov [b] registradorx / por o registrador usado na funcao
 
 mov dx, offset msg3
 mov ah, 9
 int 21h
 ;call ler_valor / achar a funcao de ler num
-;mov [a] registradorx / por o registrador usado na funcao
+;mov [c] registradorx / por o registrador usado na funcao
 
 ret
 
