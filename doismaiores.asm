@@ -20,10 +20,10 @@ int 21h
 
 ret
 
-msg dw "digite o valor de a: $"
-msg dw "digite o valor de b: $"
-msg dw "digite o valor de c: $"
-msg dw "soma dos dois maiores: $" 
+msg1 dw "digite o valor de a: $"
+msg2 dw "digite o valor de b: $"
+msg3 dw "digite o valor de c: $"
+msg4 dw "soma dos dois maiores: $" 
 
 ; variaveis
 
