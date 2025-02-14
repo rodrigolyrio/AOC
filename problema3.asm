@@ -1,246 +1,229 @@
 ;; PRATICA 3 - DEMONSTRACAO DE LEITURA DE NUMERO
 
 org 100h
-   
-   
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Leitura dos dados  ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-; Imprime mensagem do primeiro numero   
-mov dx, offset msg1
-mov ah, 9
-int 21h
+; Imprime mensagem pedindo os lados do triangulo  
+SPRINT msg1
 
-; scan primeiro numero
+; Pula Linha:
+putc 0Dh
+putc 0Ah
+
+; scan X
 call scan_num
 mov num_x, cx
-mov bp, num_x
 
 ; Pula Linha:
 putc 0Dh
 putc 0Ah 
 
-; Imprime mensagem do segundo numero    
-mov dx, offset msg3
-mov ah, 9
-int 21h
-
-; Scan do segundo numero
-call scan_num
-mov num_y, cx
-mov si, num_y
-
-; Pula Linha:
-putc 0Dh
-putc 0Ah    
-
-; Imprime mensagem do terceiro numero   
-mov dx, offset msg5
-mov ah, 9
-int 21h
-
-; scan terceiro numero
-call scan_num
-mov num_z, cx
-mov di , num_z  
-putc 0Dh
-putc 0Ah    
-      
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Impressao dos dados  ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          
-; Imprime mensagem com o primeiro numero  
-  
-mov dx, offset msg2
-mov ah, 9
-int 21h 
-
-; Reimprime numero
-mov ax, num_x
-call print_num
-  
-                                  
-; Pula Linha:
-putc 0Dh
-putc 0Ah  
-
-; Imprime mensagem com o segundo numero    
-mov dx, offset msg4
-mov ah, 9
-int 21h        
-
-
-; Reimprime numero
-mov ax, num_y
-call print_num      
-
-
-; Pula Linha:
-putc 0Dh
-putc 0Ah      
- 
-; Imprime mensagem com o terceiro numero  
-mov dx, offset msg6
-mov ah, 9
-int 21h
-
-; Reimprime numero
-mov ax, num_z
-call print_num 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Verifica valores >= 1 ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;Pula Linha
-putc 0Dh
-putc 0Ah
-
 ;compara se x > 1
-mov ax, [num_x]
-cmp ax, [one]
-jg comp_y
-je comp_y
+mov ax, num_x
+cmp ax, 1
 jl menor_1
 
+; Scan Y
+call scan_num
+mov num_y, cx  
+
+; Pula Linha:
+putc 0Dh
+putc 0Ah    
 
 ;compara se y > 1
-comp_y:
-mov ax, [num_y]
-cmp ax, [one]
-jg comp_z 
-je comp_z
-jl menor_1
+mov ax, num_y
+cmp ax, 1
+jl menor_1 
+
+; scan Z
+call scan_num
+mov num_z, cx  
+
+; Pula Linha: 
+putc 0Dh
+putc 0Ah    
 
 ;compara se z > 1
 comp_z:
-mov ax, [num_z]
-cmp ax, [one]
-jg comp_xy_z
-jl menor_1
-je comp_xy_z
+mov ax, num_z
+cmp ax, 1
+jl menor_1  
+       
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Soma Valores do Triangulo ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+jmp maior_1  ;Pula o print de erro de uma variavel ser menor que 1 
 
-;
-soma__xy:
-mov ax, [num_x]
-add ax, [num_y]
-mov [soma_xy], ax
-jmp soma__xz
+ 
+menor_1:     
+sprint msg2  ;printa que deu erro
 
-;
-soma__xz:
-mov ax, [num_x]
-add ax, [num_z]
-mov [soma_xz], ax
-jmp soma__yz
+ret 
 
-;
-soma__yz:
-mov ax, [num_y]
-add ax, [num_z]
-mov [soma_yz], ax
-jmp comp_xy_z
+maior_1:
+; Parametros para o procedimento FormaTriangulo
+mov bp, num_x    
+mov dx, num_y
+mov di, num_z
+; chama o procedimento que salva em AX 1(True) ou 0(False) 
+call FormaTriangulo
 
+cmp ax, 1 
+jne false
+ 
+ 
+; Se chegou aqui printa que e triangulo
+SPRINT msg3 
+mov ax, num_x
+call PRINT_NUM_UNS 
+ 
+SPRINT msg4
+mov ax, num_y
+call PRINT_NUM_UNS
 
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Forma Triangulo ? ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
+SPRINT msg5
+mov ax, num_z
+call PRINT_NUM_UNS
 
-comp_xy_z:
-mov ax, [soma_xy]
-cmp ax, [num_z]
-jg  comp_xz_y
-jle  nao_formatriangulo
+SPRINT msg6
 
-;
-comp_xz_y:
-mov ax, [soma_xz]
-cmp ax, [num_y]
-jg  comp_yz_x
-jle  nao_formatriangulo
-
-
-;
-comp_yz_x:
-mov ax, [soma_yz]
-cmp ax, [num_x]
-jg  formatriangulo
-jle  nao_formatriangulo
-
-;;;;;;;;;;;;;;;;;;;;;;;
-;;;        Fim      ;;;
-;;;;;;;;;;;;;;;;;;;;;;;
-
-menor_1:
-mov dx, offset msg7
-mov ah, 9
-int 21h
 jmp fim
 
-formatriangulo:
-mov dx, offset msg8
-mov ah, 9
-int 21h
-jmp fim
 
-nao_formatriangulo:
-mov dx, offset msg9
-mov ah, 9
-int 21h
-jmp fim
+false:
+; Printa que nao e um triangulo
+SPRINT msg7 
+mov ax, num_x
+call PRINT_NUM_UNS
+ 
+SPRINT msg8
+mov ax, num_y
+call PRINT_NUM_UNS
+
+SPRINT msg9
+mov ax, num_z
+call PRINT_NUM_UNS
+
+SPRINT msg10
+
     
 fim:
-mov dx, offset msg10
-mov ah, 9
-int 21h
 
 ret
 
 
 ; Prints:
-msg1 db "Digite um numero: $"
-msg2 db "primeiro numero digitado: $"  
-msg3 db "Digite outro numero: $"  
-msg4 db "segundo numero digitado: $"  
-msg5 db "Digite mais um numero: $"  
-msg6 db "terceiro numero digitado: $"
-msg7 db "ERRO, numero menor que 1 $"
-msg8 db "Forma um triangulo $"
-msg9 db "Nao forma um triangulo $" 
-msg10 db "PROGRAMA ENCERRADO $"
+msg1 db 'Digite os 3 lados do tri',131, 'ngulo (os valores devem ser >= 1) $'   
+
+msg2 db 'ERRO. Os valores devem ser maiores ou iguais a 1! $'
+msgO db 'ERRO de overflow!$' 
+
+msg3 db 'Os valores $'
+msg4 db ', $'
+msg5 db ' e $'
+msg6 db ' formam um tri',131,'ngulo $' 
+
+msg7 db 'Os valores $'
+msg8 db ', $'
+msg9 db ' e $'
+msg10 db ' n',198,'o formam um tri',131,'ngulo $'
+ 
 
 ; Variaveis
 num_x dw ?
 num_y dw ?
 num_z dw ?
-one dw 1
-soma_xy dw ?
-soma_xz dw ?
-soma_yz dw ?
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; these functions are copied from emu8086.inc ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; this macro prints a char in AL and advances
-; the current cursor position:
-PUTC    MACRO   char
+;================================================
+; coloca o print do int21h em um macro
+SPRINT MACRO pos
+    lea dx, pos      ;Pega o enderenco da string para fazer a interrupcao
+    mov ah, 9        ;21h-9
+    int 21h         
+ENDM
+;================================================
+
+;================================================
+; Macro que printa um caracter usando a interrupcao 10h
+; Preciso para escrever o equivalente de '\n' 
+PUTC    MACRO   caracter
         PUSH    AX
-        MOV     AL, char
+        MOV     AL, caracter
         MOV     AH, 0Eh
         INT     10h     
         POP     AX
-ENDM
+ENDM      
+;================================================ 
 
-; gets the multi-digit SIGNED number from the keyboard,
-; and stores the result in CX register:
+FormaTriangulo  PROC    NEAR                     
+        ;Soma Valores do Triangulo
+        
+        
+        soma__xy:
+        mov ax, bp
+        add ax, dx
+        jo overflow  ; Checa se deu overflow
+        mov bx, ax
+        
+        
+        mov ax, bp
+        add ax, di 
+        jo overflow  ; Checa se deu overflow
+        mov cx, ax
+        
+        
+        mov ax, dx
+        add ax, di
+        jo overflow  ; Checa se deu overflow
+        mov si, ax
+        
+        
+        
+        jmp sem_erro ; Separa o teste de overflow do processamento
+        
+        overflow:    ; ERRO de overflow
+        
+        ; input \n:
+        putc 0Dh
+        putc 0Ah 
+        sprint msgO  ;printa na tela se deu erro e logo acaba o programa
+        
+        sem_erro:
+        
+        ;Compara a soma com o lado restante
+        
+        mov ax, bx
+        cmp ax, di
+        jle  nao_formatriangulo
+        
+        
+        mov ax, cx
+        cmp ax, dx
+        jle  nao_formatriangulo
+        
+        
+        mov ax, si
+        cmp ax, bp
+        jle  nao_formatriangulo
+
+        
+        ; Se chegou aqui e triangulo
+        MOV AX, 1
+        RET
+        
+        
+        nao_formatriangulo:
+        ; Printa que nao e um triangulo    
+        
+        MOV AX, 0
+        RET
+        
+FormaTriangulo ENDP        
+;================================================    
+
+;================================================
+; Funcao base do emu8086.inc para ler como input um numero com sinal
+; salva o numero no registrador CX:
 SCAN_NUM        PROC    NEAR
         PUSH    DX
         PUSH    AX
@@ -248,99 +231,99 @@ SCAN_NUM        PROC    NEAR
         
         MOV     CX, 0
 
-        ; reset flag:
+        ; reseta a flag :
         MOV     CS:make_minus, 0
 
 next_digit:
 
-        ; get char from keyboard
-        ; into AL:
+        ; pega um caracter digitado
+        ; coloca no AL:
         MOV     AH, 00h
         INT     16h
-        ; and print it:
+        ; e imprime pro usuario ver o proprio digito:
         MOV     AH, 0Eh
         INT     10h
 
-        ; check for MINUS:
+        ; checa se o caracter e de sinal negativo:
         CMP     AL, '-'
         JE      set_minus
 
-        ; check for ENTER key:
-        CMP     AL, 0Dh  ; carriage return?
+        ; checa se o usuario deu enter:
+        CMP     AL, 0Dh  
         JNE     not_cr
         JMP     stop_input
 not_cr:
 
 
-        CMP     AL, 8                   ; 'BACKSPACE' pressed?
-        JNE     backspace_checked
-        MOV     DX, 0                   ; remove last digit by
-        MOV     AX, CX                  ; division:
-        DIV     CS:ten                  ; AX = DX:AX / 10 (DX-rem).
-        MOV     CX, AX
-        PUTC    ' '                     ; clear position.
-        PUTC    8                       ; backspace again.
-        JMP     next_digit
+        CMP     AL, 8                ; Detecta se 'backspace' foi apertado
+        JNE     backspace_checked    ; Se nao for ele pula essa etapa
+        MOV     DX, 0                ; Prepara DX para divisao
+        MOV     AX, CX               ; Pega o caracter anterior
+        DIV     CS:ten               ; E realizada uma divisao por 10 pois
+        MOV     CX, AX               ; divisao por 10 remove o ultimo numero
+        PUTC    ' '                  ; Limpa a area do caracter anterior
+        PUTC    8                    ; Backspace
+        JMP     next_digit           ; Espera o proximo digito
 backspace_checked:
 
 
-        ; allow only digits:
+        ; analisa se o caracter e um numero:
         CMP     AL, '0'
         JAE     ok_AE_0
-        JMP     remove_not_digit
+        JMP     remove_not_digit  ;se nao for um numero ele e removido
 ok_AE_0:        
         CMP     AL, '9'
         JBE     ok_digit
 remove_not_digit:       
-        PUTC    8       ; backspace.
-        PUTC    ' '     ; clear last entered not digit.
-        PUTC    8       ; backspace again.        
-        JMP     next_digit ; wait for next input.       
+        PUTC    8       ; backspace
+        PUTC    ' '     ; limpa o caracter que nao e um numero
+        PUTC    8       ; backspace        
+        JMP     next_digit ; Espera o proximo digito       
 ok_digit:
 
 
-        ; multiply CX by 10 (first time the result is zero)
+        ; Multiplica CX por 10 (a primeira vez que o resultado for 0)
         PUSH    AX
         MOV     AX, CX
-        MUL     CS:ten                  ; DX:AX = AX*10
+        MUL     CS:ten                  
         MOV     CX, AX
         POP     AX
 
-        ; check if the number is too big
-        ; (result should be 16 bits)
+        ; Checa se for muito grande o numero
+        ; pois o resultado tem que ser 16 bits
         CMP     DX, 0
         JNE     too_big
 
-        ; convert from ASCII code:
+        ; Converte de ASCII:
         SUB     AL, 30h
 
-        ; add AL to CX:
-        MOV     AH, 0
-        MOV     DX, CX      ; backup, in case the result will be too big.
-        ADD     CX, AX
-        JC      too_big2    ; jump if the number is too big.
 
-        JMP     next_digit
+        MOV     AH, 0
+        MOV     DX, CX      ; Salva antes se o numero ficar muito grande
+        ADD     CX, AX
+        JC      too_big2    ; Checa se o numero for muito grande
+
+        JMP     next_digit  ; Espera o proximo digito
 
 set_minus:
         MOV     CS:make_minus, 1
-        JMP     next_digit
+        JMP     next_digit  ; Espera o proximo digito
 
 too_big2:
-        MOV     CX, DX      ; restore the backuped value before add.
-        MOV     DX, 0       ; DX was zero before backup!
+        MOV     CX, DX      ; Restaura para o numero salva antes de ser 
+        MOV     DX, 0       ; muito grande e limpa o save
 too_big:
         MOV     AX, CX
-        DIV     CS:ten  ; reverse last DX:AX = AX*10, make AX = DX:AX / 10
+        DIV     CS:ten      ; Reverte o processo de multiplicar por 10
         MOV     CX, AX
-        PUTC    8       ; backspace.
-        PUTC    ' '     ; clear last entered digit.
-        PUTC    8       ; backspace again.        
-        JMP     next_digit ; wait for Enter/Backspace.
+        PUTC    8           ; Backspace
+        PUTC    ' '         ; Limpa o digito que deixou grande de mais
+        PUTC    8           ; backspace        
+        JMP     next_digit  ; Espera o proximo digito
         
         
 stop_input:
-        ; check flag:
+        ; Checa a flag:
         CMP     CS:make_minus, 0
         JE      not_minus
         NEG     CX
@@ -350,96 +333,69 @@ not_minus:
         POP     AX
         POP     DX
         RET
-make_minus      DB      ?       ; used as a flag.
-SCAN_NUM        ENDP                             
+make_minus      DB      ?   ; usado de flag.
+SCAN_NUM        ENDP                                
 
-; this procedure prints number in AX,
-; used with PRINT_NUM_UNS to print signed numbers:
-PRINT_NUM       PROC    NEAR
-        PUSH    DX
-        PUSH    AX
+;================================================
 
-        CMP     AX, 0
-        JNZ     not_zero
-
-        PUTC    '0'
-        JMP     printed
-
-not_zero:
-        ; the check SIGN of AX,
-        ; make absolute if it's negative:
-        CMP     AX, 0
-        JNS     positive
-        NEG     AX
-
-        PUTC    '-'
-
-positive:
-        CALL    PRINT_NUM_UNS
-printed:
-        POP     AX
-        POP     DX
-        RET
-PRINT_NUM       ENDP
-
-; this procedure prints out an unsigned
-; number in AX (not just a single digit)
-; allowed values are from 0 to 65535 (FFFF)
+;================================================
+; Printa um numero em AX sem sinal 
+; valores aceitos de 0 a 65535 (FFFF)
 PRINT_NUM_UNS   PROC    NEAR
         PUSH    AX
         PUSH    BX
         PUSH    CX
         PUSH    DX
 
-        ; flag to prevent printing zeros before number:
+        ; flag para impedir printar 0 a esquerda
         MOV     CX, 1
 
-        ; (result of "/ 10000" is always less or equal to 9).
-        MOV     BX, 10000       ; 2710h - divider.
+        ; recebe o valorr 10000 para fazer a divisao de cada casa decimal
+        MOV     BX, 10000       
 
-        ; AX is zero?
+        ; Se AX for 0
         CMP     AX, 0
         JZ      print_zero
 
 begin_print:
 
-        ; check divider (if zero go to end_print):
+        ; Checa se ja passou por todas as casas decimais
         CMP     BX,0
         JZ      end_print
 
-        ; avoid printing zeros before number:
+        ; Evita printar 0 a esquerda
         CMP     CX, 0
         JE      calc
-        ; if AX<BX then result of DIV will be zero:
+        ; Se AX<BX o resultado da divisao vai ser 0
         CMP     AX, BX
         JB      skip
 calc:
-        MOV     CX, 0   ; set flag.
+        MOV     CX, 0   ; Declara a flag.
 
         MOV     DX, 0
-        DIV     BX      ; AX = DX:AX / BX   (DX=remainder).
+        DIV     BX      ; AX recebe a divisao e DX recebe o resto.
 
-        ; print last digit
-        ; AH is always ZERO, so it's ignored
-        ADD     AL, 30h    ; convert to ASCII code.
-        PUTC    AL
+        
+        ; AH sempre e 0 nesse caso
+        ADD     AL, 30h    ; Converte pra ASCII.
+        PUTC    AL         ; Printa o ultimo digito
 
 
-        MOV     AX, DX  ; get remainder from last div.
+        MOV     AX, DX  ; Salva o resto da ultima divisao
 
 skip:
-        ; calculate BX=BX/10
+        ; Vai para a proxima casa decimal ao dividir BX por 10
         PUSH    AX
         MOV     DX, 0
         MOV     AX, BX
-        DIV     CS:ten  ; AX = DX:AX / 10   (DX=remainder).
+        DIV     CS:ten  
         MOV     BX, AX
         POP     AX
 
-        JMP     begin_print
+        JMP     begin_print ;vai para o proximo digito a ser printado
         
 print_zero:
-        PUTC    '0'
+        PUTC    '0' ; Serve apenas para se o numero recebido for 0
         
 end_print:
 
@@ -448,8 +404,8 @@ end_print:
         POP     BX
         POP     AX
         RET
-PRINT_NUM_UNS   ENDP
+PRINT_NUM_UNS   ENDP  
+;================================================
+      
 
-
-
-ten             DW      10      ; used as multiplier/divider by SCAN_NUM & PRINT_NUM_UNS.
+ten             DW      10 ;usado por SCAN_NUM e PRINT_NUM_UNS como divisor
