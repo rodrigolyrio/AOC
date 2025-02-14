@@ -1,7 +1,12 @@
 ;; PRATICA 3 - DEMONSTRACAO DE LEITURA DE NUMERO
 
 org 100h
- 
+   
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Leitura dos dados  ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ; Imprime mensagem do primeiro numero   
 mov dx, offset msg1
 mov ah, 9
@@ -9,8 +14,8 @@ int 21h
 
 ; scan primeiro numero
 call scan_num
-mov numd, cx
-mov bp, numd
+mov num_x, cx
+mov bp, num_x
 
 ; Pula Linha:
 putc 0Dh
@@ -23,8 +28,9 @@ int 21h
 
 ; Scan do segundo numero
 call scan_num
-mov num, cx
-mov si, num
+mov num_y, cx
+mov si, num_y
+
 ; Pula Linha:
 putc 0Dh
 putc 0Ah    
@@ -36,20 +42,23 @@ int 21h
 
 ; scan terceiro numero
 call scan_num
-mov numt, cx
-mov di , numt  
+mov num_z, cx
+mov di , num_z  
 putc 0Dh
 putc 0Ah    
-
       
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Impressao dos dados  ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           
 ; Imprime mensagem com o primeiro numero  
   
 mov dx, offset msg2
 mov ah, 9
-int 21h
+int 21h 
+
 ; Reimprime numero
-mov ax, numd
+mov ax, num_x
 call print_num
   
                                   
@@ -64,7 +73,7 @@ int 21h
 
 
 ; Reimprime numero
-mov ax, num
+mov ax, num_y
 call print_num      
 
 
@@ -76,13 +85,123 @@ putc 0Ah
 mov dx, offset msg6
 mov ah, 9
 int 21h
+
 ; Reimprime numero
-mov ax, numt
-call print_num
-  
-                
+mov ax, num_z
+call print_num 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Verifica valores >= 1 ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;Pula Linha
+putc 0Dh
+putc 0Ah
+
+;compara se x > 1
+mov ax, [num_x]
+cmp ax, [one]
+jg comp_y
+je comp_y
+jl menor_1
+
+
+;compara se y > 1
+comp_y:
+mov ax, [num_y]
+cmp ax, [one]
+jg comp_z 
+je comp_z
+jl menor_1
+
+;compara se z > 1
+comp_z:
+mov ax, [num_z]
+cmp ax, [one]
+jg comp_xy_z
+jl menor_1
+je comp_xy_z
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Soma Valores do Triangulo ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;
+soma__xy:
+mov ax, [num_x]
+add ax, [num_y]
+mov [soma_xy], ax
+jmp soma__xz
+
+;
+soma__xz:
+mov ax, [num_x]
+add ax, [num_z]
+mov [soma_xz], ax
+jmp soma__yz
+
+;
+soma__yz:
+mov ax, [num_y]
+add ax, [num_z]
+mov [soma_yz], ax
+jmp comp_xy_z
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Forma Triangulo ? ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+comp_xy_z:
+mov ax, [soma_xy]
+cmp ax, [num_z]
+jg  comp_xz_y
+jle  nao_formatriangulo
+
+;
+comp_xz_y:
+mov ax, [soma_xz]
+cmp ax, [num_y]
+jg  comp_yz_x
+jle  nao_formatriangulo
+
+
+;
+comp_yz_x:
+mov ax, [soma_yz]
+cmp ax, [num_x]
+jg  formatriangulo
+jle  nao_formatriangulo
+
+;;;;;;;;;;;;;;;;;;;;;;;
+;;;        Fim      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+
+menor_1:
+mov dx, offset msg7
+mov ah, 9
+int 21h
+jmp fim
+
+formatriangulo:
+mov dx, offset msg8
+mov ah, 9
+int 21h
+jmp fim
+
+nao_formatriangulo:
+mov dx, offset msg9
+mov ah, 9
+int 21h
+jmp fim
+    
+fim:
+mov dx, offset msg10
+mov ah, 9
+int 21h
 
 ret
+
 
 ; Prints:
 msg1 db "Digite um numero: $"
@@ -91,11 +210,19 @@ msg3 db "Digite outro numero: $"
 msg4 db "segundo numero digitado: $"  
 msg5 db "Digite mais um numero: $"  
 msg6 db "terceiro numero digitado: $"
+msg7 db "ERRO, numero menor que 1 $"
+msg8 db "Forma um triangulo $"
+msg9 db "Nao forma um triangulo $" 
+msg10 db "PROGRAMA ENCERRADO $"
 
 ; Variaveis
-num dw ?
-numd dw ?
-numt dw ?
+num_x dw ?
+num_y dw ?
+num_z dw ?
+one dw 1
+soma_xy dw ?
+soma_xz dw ?
+soma_yz dw ?
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; these functions are copied from emu8086.inc ;;;
